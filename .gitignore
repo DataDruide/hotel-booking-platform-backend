@@ -1,0 +1,56 @@
+# .NET Build
+bin/
+obj/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# User settings
+*.user
+*.suo
+
+# Environment / Secrets
+.env
+.env.*
+appsettings.Development.json
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Database files
+*.db
+*.sqlite
+
+# Test results
+TestResults/
+coverage/
+
+# Node (falls Frontend später kommt)
+node_modules/
+dist/
+build/
+
+# Build files
+bin/
+obj/
+
+# Environment files
+.env
+.env.*
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
