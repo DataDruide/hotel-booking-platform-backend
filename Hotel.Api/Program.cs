@@ -37,12 +37,17 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 
-
-if(app.Environment.IsDevelopment())
+// Automatische EF Core Migration beim Start
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+
+    db.Database.Migrate();
 }
+
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 
 app.MapControllers();

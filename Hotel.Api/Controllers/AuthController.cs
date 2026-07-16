@@ -42,7 +42,8 @@ var user=new ApplicationUser
 {
 Id=Guid.NewGuid(),
 Email=dto.Email,
-PasswordHash=BCryptHasher.HashPassword(dto.Password)
+PasswordHash=BCryptHasher.HashPassword(dto.Password),
+Role=dto.Role ?? "Customer",
 };
 
 
