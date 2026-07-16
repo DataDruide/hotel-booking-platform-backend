@@ -13,6 +13,19 @@ using Hotel.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
+});
+
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<JwtService>();
@@ -63,6 +76,8 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 
 
 var app = builder.Build();
+
+app.UseCors("frontend");
 
 
 // Automatische EF Core Migration beim Start

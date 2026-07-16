@@ -1,28 +1,32 @@
 import {useEffect,useState} from "react";
+import {api} from "../api/client";
 
 
 export default function Dashboard(){
 
 const [stats,setStats]=useState<any>(null);
+const [error,setError]=useState("");
 
 
 useEffect(()=>{
 
-const token=localStorage.getItem("token");
 
-
-fetch("http://localhost:8080/api/dashboard/stats",
-{
-headers:{
-Authorization:`Bearer ${token}`
-}
+api.get("/dashboard/stats")
+.then(res=>{
+setStats(res.data);
 })
-.then(r=>r.json())
-.then(setStats);
+.catch(err=>{
+console.error(err);
+setError("Dashboard konnte nicht geladen werden");
+});
 
 
 },[]);
 
+
+
+if(error)
+return <h1>{error}</h1>
 
 
 if(!stats)
@@ -36,16 +40,12 @@ return (
 
 <h1>🏨 Hotel SaaS Dashboard</h1>
 
-<h2>Booking Management Platform</h2>
-
 
 <div style={{
 display:"grid",
 gridTemplateColumns:"repeat(5,1fr)",
-gap:"20px",
-marginTop:"40px"
+gap:"20px"
 }}>
-
 
 <Card title="Hotels" value={stats.hotels}/>
 <Card title="Rooms" value={stats.rooms}/>
@@ -55,7 +55,6 @@ marginTop:"40px"
 
 
 </div>
-
 
 </div>
 
@@ -76,7 +75,6 @@ borderRadius:"12px"
 }}>
 
 <h3>{title}</h3>
-
 <h1>{value}</h1>
 
 </div>
