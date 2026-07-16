@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Hotel.Domain.Entities;
 using HotelEntity = Hotel.Domain.Entities.Hotel;
 using Hotel.Infrastructure;
@@ -10,28 +13,53 @@ using Hotel.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<JwtService>();
-
-
-
 builder.Services.AddControllers();
 
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<JwtService>();
 
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-builder.Services.AddInfrastructure(
-    builder.Configuration.GetConnectionString("DefaultConnection")!
-);
-
-
-
 builder.Services
-.AddAuthentication()
-.AddJwtBearer();
+.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme =
+        Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
 
-builder.Services.AddAuthorization();
+    options.DefaultChallengeScheme =
+        Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    var jwtKey = builder.Configuration["Jwt:Key"];
+
+    options.TokenValidationParameters =
+        new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            IssuerSigningKey =
+                new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                    System.Text.Encoding.UTF8.GetBytes(jwtKey!)
+                )
+        };
+});
+
+
+
+builder.Services.AddDbContext<HotelDbContext>(options =>
+{
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    );
+});
 
 
 var app = builder.Build();
@@ -50,7 +78,12 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
+
 
 
 app.Run();

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Hotel.Api.Security;
 using Hotel.Infrastructure.Persistence;
 using Hotel.Domain.Entities;
 using Hotel.Application.DTOs.Auth;
@@ -13,15 +14,16 @@ namespace Hotel.Api.Controllers;
 
 public class AuthController : ControllerBase
 {
+    private readonly HotelDbContext _db;
+    private readonly JwtService _jwt;
 
-private readonly HotelDbContext _db;
-
-
-public AuthController(HotelDbContext db)
-{
-    _db=db;
-}
-
+    public AuthController(
+        HotelDbContext db,
+        JwtService jwt)
+    {
+        _db = db;
+        _jwt = jwt;
+    }
 
 
 [HttpPost("register")]
@@ -81,11 +83,17 @@ return Unauthorized();
 
 
 
+var token = _jwt.GenerateToken(
+    user.Email,
+    user.Role ?? "Customer"
+);
+
 return Ok(new
 {
-message="Login successful",
-user.Email,
-user.Role
+    message="Login successful",
+    accessToken=token,
+    user.Email,
+    user.Role
 });
 
 }
