@@ -1,81 +1,115 @@
 import {useEffect,useState} from "react";
-import {api} from "../api/client";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import StatCard from "../components/StatCard";
+
+import {
+Building2,
+BedDouble,
+CalendarDays,
+Users,
+Euro
+} from "lucide-react";
 
 
 export default function Dashboard(){
 
 const [stats,setStats]=useState<any>(null);
-const [error,setError]=useState("");
 
 
 useEffect(()=>{
 
+const token=localStorage.getItem("token");
 
-api.get("/dashboard/stats")
-.then(res=>{
-setStats(res.data);
+fetch("http://localhost:8080/api/dashboard/stats",
+{
+headers:{
+Authorization:`Bearer ${token}`
+}
 })
-.catch(err=>{
-console.error(err);
-setError("Dashboard konnte nicht geladen werden");
-});
+.then(r=>r.json())
+.then(setStats)
+.catch(console.error);
 
 
 },[]);
 
 
 
-if(error)
-return <h1>{error}</h1>
-
-
 if(!stats)
-return <h1>Loading Dashboard...</h1>
-
-
-
 return (
-
-<div style={{padding:"40px"}}>
-
-<h1>🏨 Hotel SaaS Dashboard</h1>
-
-
-<div style={{
-display:"grid",
-gridTemplateColumns:"repeat(5,1fr)",
-gap:"20px"
-}}>
-
-<Card title="Hotels" value={stats.hotels}/>
-<Card title="Rooms" value={stats.rooms}/>
-<Card title="Bookings" value={stats.bookings}/>
-<Card title="Customers" value={stats.customers}/>
-<Card title="Revenue" value={stats.revenue+" €"}/>
-
-
+<div className="loading">
+Loading Dashboard...
 </div>
-
-</div>
-
 )
 
-}
 
-
-
-function Card({title,value}:any){
 
 return (
 
-<div style={{
-padding:"25px",
-border:"1px solid #ddd",
-borderRadius:"12px"
-}}>
+<div className="layout">
 
-<h3>{title}</h3>
-<h1>{value}</h1>
+<Sidebar/>
+
+
+<main className="content">
+
+<Header/>
+
+
+<div className="cards">
+
+
+<StatCard
+title="Hotels"
+value={stats.hotels}
+icon={<Building2/>}
+/>
+
+
+<StatCard
+title="Rooms"
+value={stats.rooms}
+icon={<BedDouble/>}
+/>
+
+
+<StatCard
+title="Bookings"
+value={stats.bookings}
+icon={<CalendarDays/>}
+/>
+
+
+<StatCard
+title="Customers"
+value={stats.customers}
+icon={<Users/>}
+/>
+
+
+<StatCard
+title="Revenue"
+value={`${stats.revenue} €`}
+icon={<Euro/>}
+/>
+
+
+</div>
+
+
+<div className="empty">
+
+<h2>No data yet 🚀</h2>
+
+<p>
+Start by creating your first hotel.
+</p>
+
+</div>
+
+
+</main>
 
 </div>
 
