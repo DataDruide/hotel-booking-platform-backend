@@ -1,34 +1,63 @@
-using HotelEntity = Hotel.Domain.Entities.Hotel;
 using Microsoft.AspNetCore.Mvc;
-using Hotel.Infrastructure.Persistence;
+using HotelEntity = Hotel.Domain.Entities.Hotel;
+using Hotel.Domain.Entities;
 
 namespace Hotel.Api.Controllers;
+
 
 [ApiController]
 [Route("api/hotels")]
 public class HotelsController : ControllerBase
 {
-    private readonly HotelDbContext _db;
 
-    public HotelsController(HotelDbContext db)
-    {
-        _db = db;
-    }
+    private static readonly List<HotelEntity> Hotels = new();
+
 
     [HttpGet]
-    public IActionResult Get()
+    public IActionResult GetHotels()
     {
-        return Ok(_db.Hotels.ToList());
+        return Ok(Hotels);
     }
 
+
+    [HttpGet("{id}")]
+    public IActionResult GetHotel(Guid id)
+    {
+        var hotel = Hotels.FirstOrDefault(x => x.Id == id);
+
+        if(hotel == null)
+            return NotFound();
+
+
+        return Ok(hotel);
+    }
+
+
     [HttpPost]
-    public async Task<IActionResult> Create(HotelEntity hotel)
+    public IActionResult CreateHotel(HotelEntity hotel)
     {
         hotel.Id = Guid.NewGuid();
 
-        await _db.Hotels.AddAsync(hotel);
-        await _db.SaveChangesAsync();
+        Hotels.Add(hotel);
 
-        return Ok(hotel);
+        return Created(
+            $"/api/hotels/{hotel.Id}",
+            hotel
+        );
+    }
+
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteHotel(Guid id)
+    {
+        var hotel = Hotels.FirstOrDefault(x=>x.Id==id);
+
+        if(hotel == null)
+            return NotFound();
+
+
+        Hotels.Remove(hotel);
+
+        return NoContent();
     }
 }

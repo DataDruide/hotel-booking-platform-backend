@@ -1,9 +1,7 @@
-namespace Hotel.Domain.Entities;
+namespace Hotel.Application.DTOs.Hotel;
 
-public class Hotel
+public class CreateHotelDto
 {
-    public Guid Id { get; set; }
-
     public string Name { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
@@ -15,8 +13,4 @@ public class Hotel
     public string Country { get; set; } = string.Empty;
 
     public decimal Rating { get; set; }
-
-    public int Stars { get; set; }
-
-    public ICollection<Room> Rooms { get; set; } = new List<Room>();
 }
