@@ -1,44 +1,55 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Hotel.Infrastructure.Persistence;
 using HotelEntity = Hotel.Domain.Entities.Hotel;
-using Hotel.Domain.Entities;
 
 namespace Hotel.Api.Controllers;
-
 
 [ApiController]
 [Route("api/hotels")]
 public class HotelsController : ControllerBase
 {
+    private readonly HotelDbContext _db;
 
-    private static readonly List<HotelEntity> Hotels = new();
+    public HotelsController(HotelDbContext db)
+    {
+        _db = db;
+    }
 
 
     [HttpGet]
-    public IActionResult GetHotels()
+    public async Task<IActionResult> GetHotels()
     {
-        return Ok(Hotels);
+        var hotels = await _db.Hotels
+            .Include(x => x.Rooms)
+            .ToListAsync();
+
+        return Ok(hotels);
     }
 
 
     [HttpGet("{id}")]
-    public IActionResult GetHotel(Guid id)
+    public async Task<IActionResult> GetHotel(Guid id)
     {
-        var hotel = Hotels.FirstOrDefault(x => x.Id == id);
+        var hotel = await _db.Hotels
+            .Include(x => x.Rooms)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-        if(hotel == null)
+        if (hotel == null)
             return NotFound();
-
 
         return Ok(hotel);
     }
 
 
     [HttpPost]
-    public IActionResult CreateHotel(HotelEntity hotel)
+    public async Task<IActionResult> CreateHotel(HotelEntity hotel)
     {
         hotel.Id = Guid.NewGuid();
 
-        Hotels.Add(hotel);
+        _db.Hotels.Add(hotel);
+
+        await _db.SaveChangesAsync();
 
         return Created(
             $"/api/hotels/{hotel.Id}",
@@ -47,16 +58,46 @@ public class HotelsController : ControllerBase
     }
 
 
-    [HttpDelete("{id}")]
-    public IActionResult DeleteHotel(Guid id)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateHotel(
+        Guid id,
+        HotelEntity updatedHotel)
     {
-        var hotel = Hotels.FirstOrDefault(x=>x.Id==id);
+        var hotel = await _db.Hotels
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-        if(hotel == null)
+        if (hotel == null)
             return NotFound();
 
 
-        Hotels.Remove(hotel);
+        hotel.Name = updatedHotel.Name;
+        hotel.Description = updatedHotel.Description;
+        hotel.Address = updatedHotel.Address;
+        hotel.City = updatedHotel.City;
+        hotel.Country = updatedHotel.Country;
+        hotel.Rating = updatedHotel.Rating;
+        hotel.Stars = updatedHotel.Stars;
+
+
+        await _db.SaveChangesAsync();
+
+        return Ok(hotel);
+    }
+
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteHotel(Guid id)
+    {
+        var hotel = await _db.Hotels
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (hotel == null)
+            return NotFound();
+
+
+        _db.Hotels.Remove(hotel);
+
+        await _db.SaveChangesAsync();
 
         return NoContent();
     }

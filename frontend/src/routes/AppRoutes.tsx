@@ -1,33 +1,14 @@
 import {
-BrowserRouter,
-Routes,
-Route,
-Navigate
-}
-from "react-router-dom";
-
+  BrowserRouter,
+  Routes,
+  Route
+} from "react-router-dom";
 
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
-
-
-function ProtectedRoute({children}:any){
-
-const token = localStorage.getItem("token");
-
-
-if(!token){
-
-return <Navigate to="/login"/>
-
-}
-
-
-return children;
-
-}
-
+import Rooms from "../pages/Rooms";
+import Hotels from "../pages/Hotels";
 
 
 export default function AppRoutes(){
@@ -38,37 +19,16 @@ return (
 
 <Routes>
 
+<Route path="/" element={<Dashboard/>}/>
 
-<Route 
-path="/" 
-element={<Navigate to="/login"/>}
-/>
+<Route path="/hotels" element={<Hotels/>}/>
 
+<Route path="/rooms" element={<Rooms/>}/>
+<Route path="/rooms" element={<Rooms/>}/>
 
+<Route path="/login" element={<Login/>}/>
 
-<Route 
-path="/login" 
-element={<Login/>}
-/>
-
-
-
-<Route 
-path="/register" 
-element={<Register/>}
-/>
-
-
-
-<Route 
-path="/dashboard" 
-element={
-<ProtectedRoute>
-<Dashboard/>
-</ProtectedRoute>
-}
-/>
-
+<Route path="/register" element={<Register/>}/>
 
 </Routes>
 

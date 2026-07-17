@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Authorization;
+
 using Microsoft.AspNetCore.Mvc;
 using Hotel.Infrastructure.Persistence;
-using Hotel.Application.DTOs.Dashboard;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hotel.Api.Controllers;
 
@@ -16,32 +16,37 @@ public class DashboardController : ControllerBase
 
     public DashboardController(HotelDbContext db)
     {
-        _db = db;
+        _db=db;
     }
 
 
-
     [HttpGet("stats")]
-    [Authorize(Roles="Admin")]
-    public IActionResult Stats()
+    public async Task<IActionResult> Stats()
     {
 
-        var result = new DashboardStatsDto
+        var hotels = await _db.Hotels.CountAsync();
+
+        var rooms = await _db.Rooms.CountAsync();
+
+        var available =
+            await _db.Rooms.CountAsync(x => x.Available);
+
+
+        var rating =
+            await _db.Hotels
+            .AverageAsync(x => (double?)x.Rating)
+            ?? 0;
+
+
+        return Ok(new
         {
-            Hotels = _db.Hotels.Count(),
-            Rooms = _db.Rooms.Count(),
-            Bookings = _db.Bookings.Count(),
-
-            Customers = _db.Users
-                .Count(x => x.Role == "Customer"),
-
-
-            Revenue = 0
-        };
-
-
-        return Ok(result);
+            hotels,
+            rooms,
+            availableRooms = available,
+            averageRating = Math.Round(rating,2)
+        });
 
     }
 
 }
+
